@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the synthetic GDC-LCO MVP case."""
+"""Run the synthetic GDC-LCO case."""
 
 from __future__ import annotations
 

@@ -1,8 +1,8 @@
 """London/Barnet open-data interface.
 
 The first real-data pipeline uses OpenStreetMap data through Overpass. It keeps
-the data model compatible with the synthetic MVP so the same clustering and
-optimisation modules can be reused.
+the data model compatible with the synthetic pipeline so the same clustering
+and optimisation modules can be reused.
 """
 
 from __future__ import annotations
@@ -220,27 +220,92 @@ def _build_candidate_sites(features: dict[str, pd.DataFrame], demand: pd.DataFra
     for key in ("parking", "charging"):
         frame = features[key]
         if not frame.empty:
-            candidate_frames.append(frame[["lon", "lat"]].copy())
+            subset = frame[["lon", "lat"]].copy()
+            subset["source"] = key
+            candidate_frames.append(subset)
     top_demand = demand.sort_values("demand", ascending=False).head(max(20, max_candidate_sites // 3))[["lon", "lat"]]
+    top_demand["source"] = "demand_hotspot"
     candidate_frames.append(top_demand.copy())
 
     candidates = pd.concat(candidate_frames, ignore_index=True) if candidate_frames else top_demand.copy()
     candidates["lon_round"] = candidates["lon"].round(4)
     candidates["lat_round"] = candidates["lat"].round(4)
     candidates = candidates.drop_duplicates(["lon_round", "lat_round"]).drop(columns=["lon_round", "lat_round"])
-    candidates = candidates.head(max_candidate_sites).reset_index(drop=True)
 
     grid_scores = _nearest_grid_values(candidates, demand)
-    candidates["site_id"] = [f"ldn_c{i:04d}" for i in range(len(candidates))]
     candidates["grid_risk"] = grid_scores["grid_risk"]
     candidates["accessibility"] = grid_scores["accessibility"]
+    candidates["local_demand_score"] = _weighted_kernel_density(candidates, demand, radius_km=1.3)
+    candidates["candidate_score"] = (
+        0.62 * min_max_scale(candidates["local_demand_score"].to_numpy())
+        + 0.28 * candidates["accessibility"].to_numpy()
+        + 0.10 * (1.0 - candidates["grid_risk"].to_numpy())
+    )
+    candidates = _select_diverse_candidates(candidates, max_count=max_candidate_sites, min_distance_km=0.55)
+    candidates["site_id"] = [f"ldn_c{i:04d}" for i in range(len(candidates))]
     candidates["fixed_cost"] = 62000 + 65000 * candidates["grid_risk"] + 14000 * (1.0 - candidates["accessibility"])
     candidates["charger_cost"] = 9000 + 2200 * candidates["grid_risk"]
     candidates["max_chargers"] = np.maximum(8, np.round(10 + 12 * candidates["accessibility"]).astype(int))
-    return candidates[["site_id", "lon", "lat", "grid_risk", "accessibility", "fixed_cost", "charger_cost", "max_chargers"]]
+    return candidates[
+        [
+            "site_id",
+            "lon",
+            "lat",
+            "source",
+            "local_demand_score",
+            "candidate_score",
+            "grid_risk",
+            "accessibility",
+            "fixed_cost",
+            "charger_cost",
+            "max_chargers",
+        ]
+    ]
 
 
 def _nearest_grid_values(points: pd.DataFrame, demand: pd.DataFrame) -> pd.DataFrame:
     distances = pairwise_haversine_km(points["lon"], points["lat"], demand["lon"], demand["lat"])
     nearest = distances.argmin(axis=1)
     return demand.iloc[nearest][["grid_risk", "accessibility"]].reset_index(drop=True)
+
+
+def _weighted_kernel_density(points: pd.DataFrame, demand: pd.DataFrame, radius_km: float) -> np.ndarray:
+    distances = pairwise_haversine_km(points["lon"], points["lat"], demand["lon"], demand["lat"])
+    weights = np.exp(-((distances / radius_km) ** 2))
+    return (weights * demand["demand"].to_numpy()[None, :]).sum(axis=1)
+
+
+def _select_diverse_candidates(candidates: pd.DataFrame, max_count: int, min_distance_km: float) -> pd.DataFrame:
+    ordered = candidates.sort_values("candidate_score", ascending=False).reset_index(drop=True)
+    selected_rows = []
+    selected_lon: list[float] = []
+    selected_lat: list[float] = []
+
+    for _, row in ordered.iterrows():
+        if len(selected_rows) >= max_count:
+            break
+        if not selected_rows:
+            selected_rows.append(row)
+            selected_lon.append(float(row["lon"]))
+            selected_lat.append(float(row["lat"]))
+            continue
+        distances = pairwise_haversine_km(
+            [float(row["lon"])],
+            [float(row["lat"])],
+            selected_lon,
+            selected_lat,
+        )
+        if float(distances.min()) >= min_distance_km:
+            selected_rows.append(row)
+            selected_lon.append(float(row["lon"]))
+            selected_lat.append(float(row["lat"]))
+
+    if len(selected_rows) < max_count:
+        selected_ids = {row.name for row in selected_rows}
+        for index, row in ordered.iterrows():
+            if len(selected_rows) >= max_count:
+                break
+            if index not in selected_ids:
+                selected_rows.append(row)
+
+    return pd.DataFrame(selected_rows).reset_index(drop=True)

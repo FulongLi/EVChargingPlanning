@@ -1,7 +1,7 @@
 """Simplified location-capacity optimisation solver.
 
-The MVP uses a transparent greedy heuristic instead of a full MILP solver so it
-can run without external optimisation dependencies.
+The current implementation uses a transparent greedy heuristic instead of a full
+MILP solver so it can run without external optimisation dependencies.
 """
 
 from __future__ import annotations

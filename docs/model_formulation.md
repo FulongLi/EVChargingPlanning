@@ -26,4 +26,4 @@ where:
 - `F_grid` measures grid-risk-weighted charging power.
 - `F_capacity` penalises assigned demand that exceeds installed capacity.
 
-The MVP implements a greedy approximation. The formulation is documented here so a MILP or multi-objective solver can replace the heuristic later.
+The current implementation uses a greedy approximation. The formulation is documented here so a MILP or multi-objective solver can replace the heuristic later.

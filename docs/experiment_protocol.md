@@ -1,6 +1,6 @@
 # Experiment Protocol
 
-The MVP experiment is run with:
+The synthetic experiment is run with:
 
 ```bash
 python3 scripts/run_synthetic_case.py

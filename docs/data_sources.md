@@ -1,6 +1,6 @@
 # Data Sources
 
-The MVP uses synthetic London-like data generated from reproducible random seeds. The first real-data case uses London/Barnet open data through OpenStreetMap and Overpass.
+The synthetic experiment uses London-like data generated from reproducible random seeds. The first real-data case uses London/Barnet open data through OpenStreetMap and Overpass.
 
 Current London/Barnet real-data interface:
 

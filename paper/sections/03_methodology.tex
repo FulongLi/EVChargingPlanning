@@ -21,7 +21,7 @@ z_i = [\lambda_s lon_i, \lambda_s lat_i, \lambda_d D_i, \lambda_a A_i, \lambda_g
 \end{equation}
 
 \subsection{Location-Capacity Optimisation Within Clusters}
-After clustering, each service zone is optimised independently. This decomposition reduces the effective problem size and produces interpretable local planning regions. The current research code implements a lightweight greedy solver for the MVP, while the documented formulation supports later replacement with a mixed-integer or multi-objective optimiser.
+After clustering, each service zone is optimised independently. This decomposition reduces the effective problem size and produces interpretable local planning regions. The current research code implements a lightweight greedy solver to maintain reproducibility without proprietary optimisation software, while the documented formulation supports later replacement with a mixed-integer or multi-objective optimiser.
 
 \subsection{Algorithm Summary}
 \begin{enumerate}

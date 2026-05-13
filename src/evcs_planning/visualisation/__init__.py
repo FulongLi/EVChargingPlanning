@@ -1,1 +1,1 @@
-"""Lightweight SVG visualisation utilities."""
+"""Lightweight PNG visualisation utilities."""

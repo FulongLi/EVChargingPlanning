@@ -1,14 +1,79 @@
 \section{Results and Discussion}
 
-This section will report the spatial demand distribution, clustering service zones, selected charging station sites, installed charger capacities, and comparison results across baseline methods.
+\subsection{Service-Zone Partitioning and Selected Sites}
+Fig.~\ref{fig:london_geo}, Fig.~\ref{fig:london_demand}, and Fig.~\ref{fig:london_grid} show the selected stations obtained from geographical K-means, demand-weighted K-means, and the proposed grid-aware demand clustering method. The geographical baseline produces compact spatial partitions, but it does not directly account for local demand intensity or grid-risk variation. Demand-weighted K-means shifts the partitioning toward higher-demand areas and improves demand coverage. The grid-aware method changes the service-zone structure further by allowing grid-risk information to influence the decomposition stage.
 
-The expected analysis is organised around five questions:
-\begin{enumerate}
-  \item How does charging demand vary across the study area?
-  \item How do geographical, demand-weighted, and grid-aware clusters differ spatially?
-  \item Where are charging stations selected and how much capacity is installed?
-  \item What trade-offs appear among service distance, investment cost, coverage, grid impact, and utilisation?
-  \item How sensitive are the results to the number of clusters and grid-risk feature weight?
-\end{enumerate}
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{london_geographical_kmeans_map.png}
+\caption{London/Barnet planning result using geographical K-means service-zone partitioning. Demand points are coloured by cluster; black markers indicate selected charging sites.}
+\label{fig:london_geo}
+\end{figure}
 
-The key claim is not that the proposed method always minimises service distance. Instead, the method is expected to provide a more balanced planning outcome by explicitly considering grid-risk information during service-zone partitioning.
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{london_demand_weighted_kmeans_map.png}
+\caption{London/Barnet planning result using demand-weighted K-means service-zone partitioning.}
+\label{fig:london_demand}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{london_grid_aware_demand_clustering_map.png}
+\caption{London/Barnet planning result using grid-aware demand clustering.}
+\label{fig:london_grid}
+\end{figure}
+
+\subsection{Baseline Comparison}
+Table~\ref{tab:london_results} reports the main quantitative results. Demand-weighted K-means achieves the shortest average service distance, 1.75 km, and the highest demand coverage, 75.55\%. This is expected because its clustering objective gives stronger influence to high-demand grid points while preserving spatial compactness.
+
+The proposed grid-aware method gives a different trade-off. Its average service distance is 1.92 km and its coverage ratio is 69.91\%, both weaker than the demand-weighted baseline. However, it reduces total investment cost to 3.29 million in the model units and lowers grid impact per installed charger to 3.75, compared with 5.16 for geographical K-means and 4.59 for demand-weighted K-means. This indicates that embedding grid-risk information in the partitioning stage can move the solution toward lower-risk candidate sites, but this comes at the cost of longer service distances and some unserved demand under the current proxy and heuristic solver.
+
+\begin{table*}[!t]
+\centering
+\caption{London/Barnet main comparison results}
+\label{tab:london_results}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Method & Dist. & Coverage & Invest. & Grid & Grid/Ch. & Util. & Unserved & Chargers \\
+\midrule
+Geo. K-means & 1.84 & 0.701 & 3.56M & 1062.11 & 5.16 & 0.933 & 0.00 & 206 \\
+Demand-weighted K-means & 1.75 & 0.755 & 3.45M & 935.38 & 4.59 & 0.950 & 91.00 & 204 \\
+Grid-aware demand clustering & 1.92 & 0.699 & 3.29M & 737.98 & 3.75 & 0.960 & 410.57 & 197 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Sensitivity to Cluster Number and Grid-Risk Weight}
+A sensitivity analysis was conducted over the number of clusters and the grid-risk feature weight. The composite score combines normalised service distance, grid impact per charger, utilisation imbalance, unserved demand, and coverage. The best-performing configuration in this grid search is \(K=9\) with a grid-risk feature weight of 0.25. The second-best configuration is \(K=11\) with a grid-risk weight of 0.50. This suggests that moderate grid awareness is beneficial, but excessive grid-risk weighting can fragment service zones and reduce user-side performance.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{london_sensitivity_composite_score.png}
+\caption{Sensitivity of the composite planning score to the number of clusters and grid-risk feature weight. Lower values indicate stronger overall trade-off performance.}
+\label{fig:london_sensitivity}
+\end{figure}
+
+\begin{table}[!t]
+\centering
+\caption{Best sensitivity-analysis configurations}
+\label{tab:sensitivity}
+\begin{tabular}{rrrrr}
+\toprule
+\(K\) & \(\lambda_g\) & Dist. & Grid/Ch. & Score \\
+\midrule
+9 & 0.25 & 1.92 & 3.75 & 0.131 \\
+11 & 0.50 & 1.84 & 4.12 & 0.136 \\
+11 & 0.75 & 1.83 & 4.29 & 0.162 \\
+11 & 0.25 & 1.79 & 4.58 & 0.178 \\
+11 & 1.00 & 1.85 & 4.26 & 0.181 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Discussion}
+The results support a cautious interpretation of the proposed framework. Grid-aware demand clustering does not dominate all baselines across all metrics. Instead, it changes the planning balance. In the current Barnet case, the demand-weighted baseline is stronger when the objective is primarily user convenience and demand coverage. The grid-aware method is stronger when the objective gives greater importance to investment and grid-risk exposure.
+
+This behaviour is consistent with the motivation of the framework. Grid awareness should not be expected to reduce service distance automatically. Its purpose is to make grid-side pressure visible earlier in the planning process. The practical value of the method therefore depends on how local authorities or network planners value user convenience relative to connection risk, hosting-capacity pressure, and investment cost.
+
+The current results also highlight two limitations. First, grid risk is represented by an open-data proxy rather than measured feeder-level hosting capacity. Second, the optimisation stage uses a lightweight greedy solver for reproducibility and transparency. A future mixed-integer or multi-objective optimiser may improve the trade-off frontier and reduce the unserved demand observed in the grid-aware setting.

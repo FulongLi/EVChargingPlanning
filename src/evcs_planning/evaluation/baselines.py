@@ -15,7 +15,7 @@ Clusterer = Callable[..., ClusteringResult]
 
 
 def get_clustering_methods() -> dict[str, Clusterer]:
-    """Return clustering methods used in the MVP comparison."""
+    """Return clustering methods used in the main comparison."""
     return {
         "geographical_kmeans": geographical_kmeans,
         "demand_weighted_kmeans": demand_weighted_kmeans,

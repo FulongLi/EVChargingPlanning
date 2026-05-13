@@ -14,7 +14,7 @@ Data preparation
   -> evaluation
 ```
 
-The MVP compares three partitioning strategies:
+The current experiments compare three partitioning strategies:
 
 1. Geographical K-means using longitude and latitude only.
 2. Demand-weighted K-means using demand as sample weights.

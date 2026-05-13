@@ -32,13 +32,14 @@ The proposed method is named GDC-LCO:
 
 > Grid-aware Demand Clustering for Location-Capacity Optimisation
 
-## Current MVP
+## Current Pipeline
 
-The first version runs fully on synthetic data so the complete pipeline can be tested before London open data is integrated.
+The project now supports both a synthetic London-like experiment and a real London/Barnet open-data experiment.
 
 It includes:
 
 - synthetic demand, candidate site, existing station, accessibility, and grid-risk data
+- London/Barnet OpenStreetMap data ingestion through Overpass
 - geographical K-means
 - demand-weighted K-means
 - grid-aware demand clustering
@@ -72,13 +73,19 @@ results/logs/
 
 ## Run London Case
 
-The London interface is intentionally a placeholder in the MVP. The core algorithms do not hard-code London-specific assumptions; real London data should be connected through configuration and data loader modules.
+The London/Barnet case uses OpenStreetMap features downloaded through Overpass. The first run downloads the raw data to `data/raw/barnet_osm_overpass.json`; later runs reuse the cached file.
 
 ```bash
 python3 scripts/run_london_case.py
 ```
 
 The first London/Barnet implementation uses OpenStreetMap features downloaded through Overpass. The pipeline builds demand proxies from residential land use, POIs, parking, major roads, substations, and existing charging stations.
+
+Sensitivity analysis can be regenerated with:
+
+```bash
+python3 scripts/run_london_sensitivity.py
+```
 
 ## Repository Structure
 
@@ -89,7 +96,7 @@ src/evcs_planning/
   clustering/      K-means, demand-weighted K-means, grid-aware clustering
   optimisation/    candidate generation and location-capacity solver
   evaluation/      metrics and baseline helpers
-  visualisation/   SVG maps, charts, and result tables
+  visualisation/   PNG maps, charts, and result tables
 
 scripts/           runnable experiment scripts
 configs/           case-study and model parameters
@@ -97,6 +104,10 @@ docs/              methodology and experiment notes
 paper/             LaTeX paper skeleton
 ```
 
-## Citation
+## Paper Draft
 
-Citation information will be added when the manuscript draft is ready.
+The LaTeX manuscript is under `paper/`. The compiled PDF draft is written to:
+
+```text
+paper/build/main.pdf
+```

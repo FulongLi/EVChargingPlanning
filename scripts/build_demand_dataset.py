@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Build a demand dataset.
 
-The MVP demand builder is covered by scripts/run_synthetic_case.py. This file is
-reserved for real-data integration.
+Demand building is currently handled by scripts/run_synthetic_case.py and
+scripts/run_london_case.py.
 """
 
 from __future__ import annotations
 
 
 def main() -> None:
-    print("Use scripts/run_synthetic_case.py for the MVP. Real data demand building will be added later.")
+    print("Use scripts/run_synthetic_case.py or scripts/run_london_case.py to build demand datasets.")
 
 
 if __name__ == "__main__":

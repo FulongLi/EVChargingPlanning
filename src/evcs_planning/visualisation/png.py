@@ -91,6 +91,44 @@ def write_metric_bars_png(
     _write_png(path, image)
 
 
+def write_sensitivity_heatmap_png(
+    table: pd.DataFrame,
+    row_column: str,
+    column_column: str,
+    value_column: str,
+    path: str | Path,
+    width: int = 900,
+    height: int = 620,
+) -> None:
+    """Write a simple raster heatmap for sensitivity-analysis tables."""
+    image = np.full((height, width, 3), 255, dtype=np.uint8)
+    rows = sorted(table[row_column].unique())
+    cols = sorted(table[column_column].unique())
+    matrix = np.full((len(rows), len(cols)), np.nan)
+    for r_index, row_value in enumerate(rows):
+        for c_index, col_value in enumerate(cols):
+            values = table.loc[(table[row_column] == row_value) & (table[column_column] == col_value), value_column]
+            if not values.empty:
+                matrix[r_index, c_index] = float(values.iloc[0])
+
+    valid = matrix[np.isfinite(matrix)]
+    min_value = float(valid.min()) if len(valid) else 0.0
+    max_value = float(valid.max()) if len(valid) else 1.0
+    left, top = 90, 70
+    cell_w = max(1, int((width - left - 80) / max(1, len(cols))))
+    cell_h = max(1, int((height - top - 80) / max(1, len(rows))))
+    for r_index in range(len(rows)):
+        for c_index in range(len(cols)):
+            value = matrix[r_index, c_index]
+            scaled = 0.5 if not np.isfinite(value) or np.isclose(max_value, min_value) else (value - min_value) / (max_value - min_value)
+            color = _heat_color(scaled)
+            x0 = left + c_index * cell_w
+            y0 = top + r_index * cell_h
+            _rect(image, x0, y0, x0 + cell_w - 2, y0 + cell_h - 2, color)
+    _rect_outline(image, left, top, left + len(cols) * cell_w, top + len(rows) * cell_h, [100, 116, 139])
+    _write_png(path, image)
+
+
 def _safe_scale(values) -> np.ndarray:
     values = np.asarray(values, dtype=float)
     if np.isclose(values.max(), values.min()):
@@ -126,6 +164,15 @@ def _circle_outline(image, cx, cy, radius, color) -> None:
     dist = (xx - cx) ** 2 + (yy - cy) ** 2
     mask = (dist <= (radius + 1) ** 2) & (dist >= max(0, radius - 1) ** 2)
     image[y_min:y_max, x_min:x_max][mask] = color
+
+
+def _heat_color(value: float) -> list[int]:
+    value = float(np.clip(value, 0.0, 1.0))
+    if value < 0.5:
+        t = value / 0.5
+        return [int(37 + t * (250 - 37)), int(99 + t * (204 - 99)), int(235 + t * (21 - 235))]
+    t = (value - 0.5) / 0.5
+    return [int(250 + t * (220 - 250)), int(204 + t * (38 - 204)), int(21 + t * (38 - 21))]
 
 
 def _write_png(path: str | Path, image: np.ndarray) -> None:

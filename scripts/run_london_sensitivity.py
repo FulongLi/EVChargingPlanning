@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+"""Run London/Barnet sensitivity analysis for K and grid-risk feature weight."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+import pandas as pd
+
+from evcs_planning.clustering.grid_aware_clustering import grid_aware_demand_clustering
+from evcs_planning.config import ensure_dirs, load_yaml
+from evcs_planning.data.loaders import save_csv
+from evcs_planning.data.london import build_barnet_real_case
+from evcs_planning.demand.demand_model import prepare_demand_points
+from evcs_planning.evaluation.metrics import evaluate_solution
+from evcs_planning.optimisation.solver import params_from_mapping, solve_clustered_planning
+from evcs_planning.visualisation.png import write_sensitivity_heatmap_png
+
+
+def main() -> None:
+    config = load_yaml(ROOT / "configs" / "london_barnet.yaml")
+    london = config.get("london", {})
+    raw_path = ROOT / london.get("raw_osm_json", "data/raw/barnet_osm_overpass.json")
+    if not raw_path.exists():
+        raise FileNotFoundError("Run scripts/run_london_case.py once to download the raw Overpass file.")
+
+    output_dirs = {
+        "processed": ROOT / "data" / "processed",
+        "figures": ROOT / "results" / "figures",
+        "tables": ROOT / "results" / "tables",
+    }
+    ensure_dirs(output_dirs)
+
+    demand_raw, candidates, _, _ = build_barnet_real_case(
+        raw_json_path=raw_path,
+        bbox=london.get("bbox", {}),
+        n_grid_lon=int(london.get("n_grid_lon", 24)),
+        n_grid_lat=int(london.get("n_grid_lat", 24)),
+        max_candidate_sites=int(london.get("max_candidate_sites", 140)),
+    )
+    demand = prepare_demand_points(demand_raw)
+    params = params_from_mapping(config)
+    random_seed = int(config.get("random_seed", 42))
+    base_weights = config.get("clustering", {}).get("feature_weights", {}).copy()
+
+    rows = []
+    for n_clusters in [5, 6, 7, 8, 9, 10, 11]:
+        for grid_weight in [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]:
+            weights = base_weights.copy()
+            weights["grid_risk"] = grid_weight
+            clustering = grid_aware_demand_clustering(
+                demand,
+                n_clusters=n_clusters,
+                random_seed=random_seed,
+                max_iter=int(config.get("clustering", {}).get("max_iter", 100)),
+                feature_weights=weights,
+            )
+            method_name = f"gdc_lco_k{n_clusters}_g{grid_weight:.2f}"
+            selected, assignments = solve_clustered_planning(demand, candidates, clustering.labels, params, method_name)
+            row = {
+                "n_clusters": n_clusters,
+                "grid_weight": grid_weight,
+                "method": method_name,
+                "clustering_inertia": clustering.inertia,
+            }
+            row.update(evaluate_solution(selected, assignments, params))
+            rows.append(row)
+
+    sensitivity = pd.DataFrame(rows)
+    sensitivity = _add_composite_score(sensitivity)
+    save_csv(sensitivity, output_dirs["tables"] / "london_grid_weight_sensitivity.csv")
+    best = sensitivity.sort_values("composite_score").head(10).reset_index(drop=True)
+    save_csv(best, output_dirs["tables"] / "london_grid_weight_sensitivity_best.csv")
+    write_sensitivity_heatmap_png(
+        sensitivity,
+        row_column="n_clusters",
+        column_column="grid_weight",
+        value_column="composite_score",
+        path=output_dirs["figures"] / "london_sensitivity_composite_score.png",
+    )
+    write_sensitivity_heatmap_png(
+        sensitivity,
+        row_column="n_clusters",
+        column_column="grid_weight",
+        value_column="grid_impact_per_charger",
+        path=output_dirs["figures"] / "london_sensitivity_grid_impact.png",
+    )
+    print(f"Sensitivity analysis complete: {output_dirs['tables'] / 'london_grid_weight_sensitivity.csv'}")
+
+
+def _add_composite_score(table: pd.DataFrame) -> pd.DataFrame:
+    result = table.copy()
+    lower_better = [
+        "average_service_distance_km",
+        "grid_impact_per_charger",
+        "station_utilisation_std",
+        "unserved_demand",
+    ]
+    higher_better = ["demand_coverage_ratio"]
+    score = pd.Series(0.0, index=result.index)
+    for column in lower_better:
+        score += _normalise(result[column])
+    for column in higher_better:
+        score += 1.0 - _normalise(result[column])
+    result["composite_score"] = score / (len(lower_better) + len(higher_better))
+    return result
+
+
+def _normalise(series: pd.Series) -> pd.Series:
+    min_value = float(series.min())
+    max_value = float(series.max())
+    if abs(max_value - min_value) < 1e-12:
+        return pd.Series(0.5, index=series.index)
+    return (series - min_value) / (max_value - min_value)
+
+
+if __name__ == "__main__":
+    main()

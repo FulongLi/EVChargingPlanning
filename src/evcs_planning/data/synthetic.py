@@ -1,4 +1,4 @@
-"""Synthetic London-like data generation for the MVP pipeline."""
+"""Synthetic London-like data generation."""
 
 from __future__ import annotations
 
