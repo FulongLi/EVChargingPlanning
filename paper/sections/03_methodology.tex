@@ -1,0 +1,33 @@
+\section{Proposed GDC-LCO Methodology}
+
+The proposed GDC-LCO framework consists of demand feature construction, grid-risk proxy construction, service-zone clustering, candidate station generation, and location-capacity optimisation.
+
+\subsection{Demand Feature Construction}
+Charging demand is represented as a weighted combination of residential, commercial, and road-related components:
+\begin{equation}
+D_i = \alpha D_i^{\text{res}} + \beta D_i^{\text{com}} + \gamma D_i^{\text{road}}.
+\end{equation}
+
+\subsection{Grid-Risk Proxy Construction}
+In the absence of full distribution network topology, grid impact is represented by reproducible proxy variables such as peak-load pressure, assumed hosting capacity, existing charging density, or distance to an assumed connection point. A simple proxy can be expressed as:
+\begin{equation}
+G_i = \frac{\text{peak load proxy}_i}{\text{hosting capacity proxy}_i}.
+\end{equation}
+
+\subsection{Clustering Methods}
+Three clustering methods are compared. Geographical K-means uses only spatial coordinates. Demand-weighted K-means uses demand weights when updating cluster centroids. The proposed grid-aware demand clustering uses:
+\begin{equation}
+z_i = [\lambda_s lon_i, \lambda_s lat_i, \lambda_d D_i, \lambda_a A_i, \lambda_g G_i].
+\end{equation}
+
+\subsection{Location-Capacity Optimisation Within Clusters}
+After clustering, each service zone is optimised independently. This decomposition reduces the effective problem size and produces interpretable local planning regions. The current research code implements a lightweight greedy solver for the MVP, while the documented formulation supports later replacement with a mixed-integer or multi-objective optimiser.
+
+\subsection{Algorithm Summary}
+\begin{enumerate}
+  \item Construct demand, accessibility, and grid-risk features.
+  \item Partition demand points using grid-aware clustering.
+  \item Generate candidate stations within each service zone.
+  \item Select stations and charger capacities inside each zone.
+  \item Aggregate selected stations and evaluate distance, cost, coverage, grid impact, and utilisation.
+\end{enumerate}

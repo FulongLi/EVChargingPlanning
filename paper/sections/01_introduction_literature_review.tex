@@ -1,0 +1,16 @@
+\section{Introduction and Literature Review}
+
+The rapid adoption of electric vehicles creates increasing pressure on public charging infrastructure in dense urban areas. Charging demand is spatially uneven because it is shaped by residential density, workplace and commercial activity, road accessibility, parking availability, and the distribution of existing charging facilities. Planning charging stations therefore requires more than minimising geographical distance between users and stations.
+
+Urban electric vehicle charging station planning faces three related challenges. First, demand varies substantially across neighbourhoods and times of day. Second, city-scale siting and sizing can become computationally expensive when many demand points and candidate sites are considered simultaneously. Third, many planning approaches focus primarily on demand coverage and user convenience, while grid-side connection cost, hosting capacity, or peak-load pressure are considered only after candidate locations have been generated.
+
+Existing studies on charging demand modelling commonly use travel surveys, population density, land use, points of interest, traffic flow, and charging transaction data to estimate spatial demand. Siting and sizing studies have formulated variants of covering, p-median, mixed-integer optimisation, and multi-objective models to balance distance, cost, coverage, and utilisation. Clustering-based infrastructure planning has also been used to partition large urban problems into smaller service regions. However, clustering stages are often based on geography alone or demand-weighted geography. Grid-aware planning studies, by contrast, usually introduce distribution network constraints or hosting-capacity limits at the optimisation stage rather than embedding grid-related information into service-zone formation.
+
+This paper addresses the gap by proposing a grid-aware demand clustering framework for electric vehicle charging station planning. The core idea is to use clustering as a problem decomposition tool, not as the final siting decision. Demand points are first partitioned into service zones using spatial location, charging demand, transport accessibility, and grid-risk proxy features. Candidate charging stations are then selected and sized within each service zone.
+
+The contributions of this paper are threefold:
+\begin{itemize}
+  \item A grid-aware demand clustering method is proposed for interpretable electric vehicle charging service-zone partitioning.
+  \item A location-capacity optimisation framework is developed to jointly consider user service distance, investment cost, capacity adequacy, and grid impact.
+  \item A reproducible London case-study pipeline is designed with baseline comparison, sensitivity analysis, and open-source research code.
+\end{itemize}

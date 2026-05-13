@@ -1,0 +1,1 @@
+"""Lightweight SVG visualisation utilities."""

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "evcs-planning"
+version = "0.1.0"
+description = "Grid-aware demand clustering for EV charging station siting and sizing."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "EVChargingPlanning contributors" }
+]
+dependencies = [
+  "numpy>=1.23",
+  "pandas>=1.5",
+  "PyYAML>=6.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"

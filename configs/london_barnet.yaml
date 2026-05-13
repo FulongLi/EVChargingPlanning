@@ -1,0 +1,12 @@
+case_name: london_barnet
+
+data:
+  boundary_file: data/raw/london_barnet_boundary.geojson
+  evcs_file: data/raw/london_ev_charging_stations.csv
+  population_file: data/raw/barnet_population.csv
+  poi_file: data/raw/barnet_poi.csv
+  road_file: data/raw/barnet_roads.geojson
+
+notes:
+  - This configuration is a placeholder for the real London data interface.
+  - Core algorithm modules should remain city-agnostic.

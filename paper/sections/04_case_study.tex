@@ -1,0 +1,9 @@
+\section{Case Study and Experimental Setup}
+
+The target case study is London, with Barnet or selected Inner London boroughs as the initial implementation area. London is suitable because it provides rich open urban data, a dense and heterogeneous charging environment, and a relevant policy context for public charging infrastructure planning.
+
+The MVP first validates the full pipeline on a synthetic London-like dataset. The synthetic case generates demand points, candidate sites, existing stations, accessibility scores, hosting-capacity proxies, and grid-risk scores from reproducible random seeds. This allows the methodology, code structure, metrics, and visualisation outputs to be tested before real data integration.
+
+The planned real-data sources include public charging station locations, population density, points of interest, road network data, borough boundaries, parking or residential density proxies, and grid-risk proxy variables. All real-data integration will be handled through configuration files and data loaders so that the core algorithms remain city-agnostic.
+
+The experimental comparison includes geographical K-means, demand-weighted K-means, and the proposed grid-aware demand clustering method. The main evaluation metrics are average service distance, demand coverage ratio, investment cost, grid impact score, utilisation balance, unserved demand, selected station count, installed chargers, and computation time.

@@ -1,0 +1,38 @@
+\section{Problem Formulation}
+
+Let \(I\) denote the set of charging demand points and \(J\) denote the set of candidate charging station sites. Each demand point \(i \in I\) has a location, charging demand weight \(D_i\), accessibility score \(A_i\), and grid-risk proxy \(G_i\). Each candidate site \(j \in J\) has a location, fixed construction cost, charger installation cost, grid-risk score, and maximum charger capacity.
+
+The main decision variables are:
+\begin{align}
+y_j &= \begin{cases}1, & \text{if candidate site } j \text{ is selected}\\0, & \text{otherwise,}\end{cases}\\
+n_j &= \text{number of chargers installed at site } j,\\
+x_{ij} &= \begin{cases}1, & \text{if demand point } i \text{ is assigned to site } j\\0, & \text{otherwise.}\end{cases}
+\end{align}
+
+The general objective is formulated as:
+\begin{equation}
+\min F = w_1 F_{\text{distance}} + w_2 F_{\text{investment}} + w_3 F_{\text{grid}} + w_4 F_{\text{capacity}}.
+\end{equation}
+
+The distance component is:
+\begin{equation}
+F_{\text{distance}} = \sum_{i \in I}\sum_{j \in J} D_i d_{ij} x_{ij},
+\end{equation}
+where \(d_{ij}\) is the travel or spatial distance between demand point \(i\) and station \(j\).
+
+The investment component is:
+\begin{equation}
+F_{\text{investment}} = \sum_{j \in J} c_j^{\text{fixed}} y_j + c^{\text{charger}}_j n_j.
+\end{equation}
+
+The grid impact component is represented using a proxy:
+\begin{equation}
+F_{\text{grid}} = \sum_{j \in J} P_j G_j,
+\end{equation}
+where \(P_j\) is the installed charging power at site \(j\).
+
+The capacity penalty is:
+\begin{equation}
+F_{\text{capacity}} = \sum_{j \in J} \max(0, Q_j - C_j),
+\end{equation}
+where \(Q_j\) is assigned demand and \(C_j\) is installed station capacity.

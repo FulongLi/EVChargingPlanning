@@ -1,0 +1,38 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{cite}
+
+\title{Grid-Aware Demand Clustering for Electric Vehicle Charging Station Siting and Sizing: A London Case Study}
+
+\author{
+\IEEEauthorblockN{Author Name}
+\IEEEauthorblockA{Department or Institution\\
+Email: author@example.com}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper proposes a grid-aware demand clustering framework for electric vehicle charging station siting and sizing. The method partitions urban charging demand into interpretable service zones using demand, accessibility, and grid-risk proxy features, and then performs location-capacity optimisation within each zone. A London case study is designed to evaluate the proposed method against geographical clustering, demand-weighted clustering, and baseline siting strategies.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Electric vehicle charging stations, siting and sizing, demand clustering, grid-aware planning, urban infrastructure planning.
+\end{IEEEkeywords}
+
+\input{sections/01_introduction_literature_review}
+\input{sections/02_problem_formulation}
+\input{sections/03_methodology}
+\input{sections/04_case_study}
+\input{sections/05_results_discussion}
+\input{sections/06_conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
