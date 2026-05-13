@@ -11,18 +11,19 @@ london:
     east: -0.125
   overpass_endpoint: https://overpass-api.de/api/interpreter
   raw_osm_json: data/raw/barnet_osm_overpass.json
+  boundary_osm_json: data/raw/barnet_boundary_overpass.json
   n_grid_lon: 24
   n_grid_lat: 24
   max_candidate_sites: 140
 
 clustering:
-  n_clusters: 9
+  n_clusters: 8
   max_iter: 100
   feature_weights:
     spatial: 1.0
     demand: 0.65
     accessibility: 0.4
-    grid_risk: 0.25
+    grid_risk: 0.5
 
 optimisation:
   max_stations_per_cluster: 7

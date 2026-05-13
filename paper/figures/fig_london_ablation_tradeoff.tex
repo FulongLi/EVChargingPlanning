@@ -1,0 +1,24 @@
+\begin{tikzpicture}
+\begin{axis}[
+width=0.94\linewidth,
+height=0.70\linewidth,
+xlabel={Average service distance (km)},
+ylabel={Grid impact per charger},
+grid=both,
+tick label style={font=\scriptsize},
+label style={font=\scriptsize},
+legend columns=2,
+legend style={font=\tiny, at={(0.03,0.97)}, anchor=north west, fill=white, fill opacity=0.88, draw=none},
+]
+\addplot[only marks, mark=*, mark size=2.4pt, blue] coordinates {(1.0467812652490318,6.377191407847234)};
+\addlegendentry{Spatial only}
+\addplot[only marks, mark=*, mark size=2.4pt, red] coordinates {(1.0783842903589067,6.140475422389281)};
+\addlegendentry{Demand weighted}
+\addplot[only marks, mark=*, mark size=2.4pt, green!60!black] coordinates {(1.1532192487227446,5.846353207239011)};
+\addlegendentry{Demand feature}
+\addplot[only marks, mark=*, mark size=2.4pt, purple] coordinates {(1.1552638946260476,5.564828725341054)};
+\addlegendentry{Plus accessibility}
+\addplot[only marks, mark=*, mark size=2.4pt, orange] coordinates {(1.0724620051950338,4.924956955883644)};
+\addlegendentry{Plus grid risk}
+\end{axis}
+\end{tikzpicture}

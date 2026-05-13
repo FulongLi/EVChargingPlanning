@@ -75,20 +75,118 @@ def fetch_barnet_osm_raw(
     return payload
 
 
+def fetch_barnet_boundary_raw(
+    output_path: str | Path,
+    endpoint: str = DEFAULT_OVERPASS_ENDPOINT,
+    timeout_seconds: int = 120,
+) -> dict[str, Any]:
+    """Download the Barnet administrative boundary from OpenStreetMap."""
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    query = f"""
+    [out:json][timeout:{timeout_seconds}];
+    relation["boundary"="administrative"]["admin_level"="8"]["name"="London Borough of Barnet"];
+    out geom;
+    """
+    body = parse.urlencode({"data": query}).encode("utf-8")
+    req = request.Request(endpoint, data=body, headers={"User-Agent": "EVChargingPlanning/0.1"})
+    with request.urlopen(req, timeout=timeout_seconds + 30) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    payload["downloaded_at_unix"] = time.time()
+    output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return payload
+
+
+def boundary_json_to_lines(raw_json_path: str | Path) -> pd.DataFrame:
+    """Convert an Overpass relation with geometries into drawable boundary lines."""
+    raw = json.loads(Path(raw_json_path).read_text(encoding="utf-8"))
+    rows = []
+    part_id = 0
+    for element in raw.get("elements", []):
+        for member in element.get("members", []):
+            geometry = member.get("geometry", [])
+            if not geometry:
+                continue
+            for point in geometry:
+                rows.append({"part": part_id, "lon": float(point["lon"]), "lat": float(point["lat"])})
+            part_id += 1
+    return pd.DataFrame(rows, columns=["part", "lon", "lat"])
+
+
 def build_barnet_real_case(
     raw_json_path: str | Path,
     bbox: dict[str, float],
     n_grid_lon: int = 24,
     n_grid_lat: int = 24,
     max_candidate_sites: int = 140,
+    boundary: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[str, pd.DataFrame]]:
     """Build demand points, candidate sites, and existing stations from raw OSM data."""
     raw = json.loads(Path(raw_json_path).read_text(encoding="utf-8"))
     features = osm_elements_to_feature_tables(raw.get("elements", []))
+    if boundary is not None and not boundary.empty:
+        features = _filter_features_to_boundary(features, boundary)
     demand = _build_demand_grid(features, bbox, n_grid_lon=n_grid_lon, n_grid_lat=n_grid_lat)
+    if boundary is not None and not boundary.empty:
+        demand = clip_points_to_boundary(demand, boundary).reset_index(drop=True)
+        demand["demand_id"] = [f"ldn_d{i:04d}" for i in range(len(demand))]
     existing = _build_existing_stations(features["charging"])
     candidates = _build_candidate_sites(features, demand, max_candidate_sites=max_candidate_sites)
+    if boundary is not None and not boundary.empty:
+        existing = clip_points_to_boundary(existing, boundary).reset_index(drop=True)
+        candidates = clip_points_to_boundary(candidates, boundary).reset_index(drop=True)
+        candidates["site_id"] = [f"ldn_c{i:04d}" for i in range(len(candidates))]
     return demand, candidates, existing, features
+
+
+def clip_points_to_boundary(points: pd.DataFrame, boundary: pd.DataFrame) -> pd.DataFrame:
+    """Keep only points inside the stitched Barnet boundary polygon."""
+    if points.empty or boundary.empty:
+        return points.copy()
+    polygon = boundary_to_polygon(boundary)
+    mask = [_point_in_polygon(float(row.lon), float(row.lat), polygon) for row in points.itertuples()]
+    return points.loc[mask].copy()
+
+
+def boundary_to_polygon(boundary: pd.DataFrame) -> list[tuple[float, float]]:
+    """Stitch Overpass boundary line parts into a single polygon ring."""
+    parts = []
+    for part_id, group in boundary.groupby("part"):
+        coords = [(round(float(row.lon), 7), round(float(row.lat), 7)) for row in group.itertuples()]
+        if len(coords) > 1:
+            parts.append((part_id, coords))
+    if not parts:
+        return []
+
+    _, ring = parts.pop(0)
+    while parts:
+        end = ring[-1]
+        match = None
+        for index, (_, coords) in enumerate(parts):
+            if coords[0] == end:
+                match = (index, coords, False)
+                break
+            if coords[-1] == end:
+                match = (index, coords, True)
+                break
+        if match is None:
+            # OSM ways should join exactly after rounding. If not, join the nearest
+            # endpoint to keep the clipping polygon usable.
+            candidates = []
+            for index, (_, coords) in enumerate(parts):
+                candidates.append((_squared_distance(end, coords[0]), index, False))
+                candidates.append((_squared_distance(end, coords[-1]), index, True))
+            _, index, reverse = min(candidates, key=lambda item: item[0])
+            coords = parts[index][1]
+            match = (index, coords, reverse)
+        index, coords, reverse = match
+        parts.pop(index)
+        if reverse:
+            coords = list(reversed(coords))
+        ring.extend(coords[1:] if coords[0] == ring[-1] else coords)
+    if ring[0] != ring[-1]:
+        ring.append(ring[0])
+    return ring
 
 
 def osm_elements_to_feature_tables(elements: list[dict[str, Any]]) -> dict[str, pd.DataFrame]:
@@ -121,6 +219,29 @@ def osm_elements_to_feature_tables(elements: list[dict[str, Any]]) -> dict[str, 
             buckets["poi"].append(row)
 
     return {key: pd.DataFrame(rows, columns=["osm_id", "lon", "lat", "name", "category", "tags"]) for key, rows in buckets.items()}
+
+
+def _filter_features_to_boundary(features: dict[str, pd.DataFrame], boundary: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    return {name: clip_points_to_boundary(frame, boundary) for name, frame in features.items()}
+
+
+def _point_in_polygon(lon: float, lat: float, polygon: list[tuple[float, float]]) -> bool:
+    if len(polygon) < 3:
+        return True
+    inside = False
+    j = len(polygon) - 1
+    for i in range(len(polygon)):
+        xi, yi = polygon[i]
+        xj, yj = polygon[j]
+        intersects = (yi > lat) != (yj > lat) and lon < (xj - xi) * (lat - yi) / ((yj - yi) or 1e-12) + xi
+        if intersects:
+            inside = not inside
+        j = i
+    return inside
+
+
+def _squared_distance(left: tuple[float, float], right: tuple[float, float]) -> float:
+    return (left[0] - right[0]) ** 2 + (left[1] - right[1]) ** 2
 
 
 def _element_lon_lat(element: dict[str, Any]) -> tuple[float | None, float | None]:

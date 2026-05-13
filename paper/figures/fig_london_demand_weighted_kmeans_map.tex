@@ -1,0 +1,31 @@
+\begin{tikzpicture}
+\begin{axis}[
+width=0.94\linewidth,
+height=0.72\linewidth,
+xlabel={Longitude},
+ylabel={Latitude},
+xmin=-0.335, xmax=-0.125,
+ymin=51.555, ymax=51.69,
+scaled ticks=false,
+tick label style={/pgf/number format/fixed, font=\scriptsize},
+grid=both,
+major grid style={line width=.1pt,draw=gray!25},
+label style={font=\scriptsize},
+legend style={font=\scriptsize, at={(0.02,0.02)}, anchor=south west, fill=white, fill opacity=0.85, draw=none},
+]
+\addplot[black, very thick] table[x=lon,y=lat] {figures/data/barnet_boundary.tsv};
+\addlegendentry{Barnet boundary}
+\addplot[only marks, mark=*, mark size=0.75pt, blue, opacity=0.55] table[x=lon,y=lat] {figures/data/london_demand_weighted_kmeans_cluster_0.tsv};
+\addplot[only marks, mark=*, mark size=0.75pt, red, opacity=0.55] table[x=lon,y=lat] {figures/data/london_demand_weighted_kmeans_cluster_1.tsv};
+\addplot[only marks, mark=*, mark size=0.75pt, green!60!black, opacity=0.55] table[x=lon,y=lat] {figures/data/london_demand_weighted_kmeans_cluster_2.tsv};
+\addplot[only marks, mark=*, mark size=0.75pt, purple, opacity=0.55] table[x=lon,y=lat] {figures/data/london_demand_weighted_kmeans_cluster_3.tsv};
+\addplot[only marks, mark=*, mark size=0.75pt, orange, opacity=0.55] table[x=lon,y=lat] {figures/data/london_demand_weighted_kmeans_cluster_4.tsv};
+\addplot[only marks, mark=*, mark size=0.75pt, cyan!70!black, opacity=0.55] table[x=lon,y=lat] {figures/data/london_demand_weighted_kmeans_cluster_5.tsv};
+\addplot[only marks, mark=*, mark size=0.75pt, magenta, opacity=0.55] table[x=lon,y=lat] {figures/data/london_demand_weighted_kmeans_cluster_6.tsv};
+\addplot[only marks, mark=*, mark size=0.75pt, teal, opacity=0.55] table[x=lon,y=lat] {figures/data/london_demand_weighted_kmeans_cluster_7.tsv};
+\addplot[only marks, mark=o, mark size=1.1pt, draw=gray!70, opacity=0.70] table[x=lon,y=lat] {figures/data/candidate_sites.tsv};
+\addlegendentry{Candidate sites}
+\addplot[only marks, mark=*, mark size=2.6pt, black] table[x=lon,y=lat] {figures/data/london_demand_weighted_kmeans_selected.tsv};
+\addlegendentry{Selected stations}
+\end{axis}
+\end{tikzpicture}

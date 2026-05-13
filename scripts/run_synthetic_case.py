@@ -98,6 +98,9 @@ def main() -> None:
             candidates,
             selected,
             output_dirs["figures"] / f"{method_name}_map.png",
+            title=f"BASIS {method_name.replace('_', ' ').upper()}",
+            subtitle="INPUTS SYNTHETIC DEMAND CANDIDATES ACCESSIBILITY AND GRID RISK",
+            note="DOTS DEMAND ZONES  RINGS CANDIDATES  BLACK SELECTED STATIONS",
         )
 
     comparison = comparison_table(metrics)
@@ -113,11 +116,15 @@ def main() -> None:
         comparison,
         "average_service_distance_km",
         output_dirs["figures"] / "average_service_distance_comparison.png",
+        title="Synthetic Case Average Service Distance",
+        note="Based on demand-weighted distance from each synthetic demand point to its assigned station.",
     )
     write_metric_bars_png(
         comparison,
         "grid_impact_score",
         output_dirs["figures"] / "grid_impact_comparison.png",
+        title="Synthetic Case Total Grid Impact",
+        note="Based on installed charging power weighted by synthetic grid-risk proxy.",
     )
 
     print(json.dumps({"case": config.get("case_name"), "methods": list(methods), "summary": str(output_dirs["tables"] / "synthetic_summary_metrics.csv")}, indent=2))

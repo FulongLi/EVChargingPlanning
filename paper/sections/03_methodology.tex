@@ -1,6 +1,13 @@
-\section{Proposed GDC-LCO Methodology}
+\section{Proposed Grid-Aware Demand Clustering for Location-Capacity Optimisation Methodology}
 
-The proposed GDC-LCO framework consists of demand feature construction, grid-risk proxy construction, service-zone clustering, candidate station generation, and location-capacity optimisation.
+The proposed Grid-aware Demand Clustering for Location-Capacity Optimisation (GDC-LCO) framework consists of demand feature construction, grid-risk proxy construction, service-zone clustering, candidate station generation, and location-capacity optimisation.
+
+\begin{figure*}[!t]
+\centering
+\input{figures/fig_gdc_lco_flowchart.tex}
+\caption{Workflow of the proposed GDC-LCO framework. Urban open data are transformed into demand, accessibility, and grid-risk features. These features are used to form service zones before candidate site selection, station sizing, and evaluation.}
+\label{fig:method_flowchart}
+\end{figure*}
 
 \subsection{Demand Feature Construction}
 Charging demand is represented as a weighted combination of residential, commercial, and road-related components:

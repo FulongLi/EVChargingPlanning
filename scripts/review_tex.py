@@ -47,7 +47,7 @@ def main() -> int:
     required_sections = [
         "Introduction and Literature Review",
         "Problem Formulation",
-        "Proposed GDC-LCO Methodology",
+        "Proposed Grid-Aware Demand Clustering for Location-Capacity Optimisation Methodology",
         "Case Study and Experimental Setup",
         "Results and Discussion",
         "Conclusion",

@@ -1,0 +1,17 @@
+\begin{tikzpicture}[
+node distance=6mm,
+box/.style={draw, rounded corners, align=center, minimum width=21mm, minimum height=11mm, font=\scriptsize},
+arrow/.style={-Latex, thick}
+]
+\node[box] (data) {Open urban\\data};
+\node[box, right=of data] (features) {Demand, access,\\grid-risk features};
+\node[box, right=of features] (cluster) {Grid-aware\\demand clustering};
+\node[box, right=of cluster] (candidate) {Candidate site\\generation};
+\node[box, right=of candidate] (optimise) {Location-capacity\\optimisation};
+\node[box, right=of optimise] (eval) {Evaluation and\\visualisation};
+\draw[arrow] (data) -- (features);
+\draw[arrow] (features) -- (cluster);
+\draw[arrow] (cluster) -- (candidate);
+\draw[arrow] (candidate) -- (optimise);
+\draw[arrow] (optimise) -- (eval);
+\end{tikzpicture}

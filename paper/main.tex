@@ -5,6 +5,10 @@
 \usepackage{booktabs}
 \usepackage{cite}
 \usepackage{url}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usetikzlibrary{arrows.meta,positioning}
+\pgfplotsset{compat=1.18}
 \graphicspath{{figures/}}
 
 \title{Grid-Aware Demand Clustering for Electric Vehicle Charging Station Siting and Sizing: A London Case Study}
@@ -20,7 +24,7 @@ Email: author@example.com}
 \maketitle
 
 \begin{abstract}
-This paper proposes a grid-aware demand clustering framework for electric vehicle charging station siting and sizing. The method partitions urban charging demand into interpretable service zones using demand, accessibility, and grid-risk proxy features, and then performs location-capacity optimisation within each zone. A London case study is designed to evaluate the proposed method against geographical clustering, demand-weighted clustering, and baseline siting strategies.
+The planning of public electric vehicle (EV) charging infrastructure in dense cities must balance user convenience, demand coverage, investment cost, and the ability of the local electricity network to accommodate additional charging load. Many siting studies optimise candidate stations after demand points have already been grouped geographically, which can delay the consideration of grid-side constraints until a late planning stage. This paper proposes Grid-aware Demand Clustering for Location-Capacity Optimisation (GDC-LCO), a grid-aware framework for EV charging station siting and sizing. The method first partitions an urban study area into charging service zones using spatial location, demand intensity, transport accessibility, and a reproducible grid-risk proxy. It then performs location-capacity optimisation within each service zone. A London Borough of Barnet case study is developed using OpenStreetMap features from Overpass, including charging stations, parking locations, points of interest, major roads, residential land use, substations, and an administrative boundary. Results show that the proposed grid-aware method reduces grid impact per installed charger relative to geographical and demand-weighted clustering while maintaining high demand coverage. The findings indicate that grid-aware clustering should be interpreted as a trade-off tool rather than a universally distance-minimising method.
 \end{abstract}
 
 \begin{IEEEkeywords}

@@ -79,6 +79,27 @@ def solve_clustered_planning(
     return selected_sites, assignments
 
 
+def solve_preselected_sites(
+    demand_points: pd.DataFrame,
+    selected_candidates: pd.DataFrame,
+    params: OptimisationParams,
+    method_name: str,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Evaluate a baseline that directly selects a fixed set of candidate sites."""
+    validate_optimisation_inputs(demand_points, selected_candidates)
+    demand = demand_points.copy()
+    demand["cluster"] = 0
+    selected = selected_candidates.copy().reset_index(drop=True)
+    selected["cluster"] = 0
+    selected["selected"] = 1
+    selected["assigned_demand"] = 0.0
+    selected["chargers"] = 1
+    assignments = _assign_demand_to_selected_sites(demand, selected, params)
+    selected["method"] = method_name
+    assignments["method"] = method_name
+    return selected, assignments
+
+
 def _select_sites_for_cluster(demand: pd.DataFrame, candidates: pd.DataFrame, params: OptimisationParams) -> pd.DataFrame:
     total_demand = float(demand["demand"].sum())
     nominal_station_capacity = params.charger_capacity * params.max_chargers_per_station
