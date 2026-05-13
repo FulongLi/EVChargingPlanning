@@ -96,8 +96,8 @@ def _select_sites_for_cluster(demand: pd.DataFrame, candidates: pd.DataFrame, pa
 
     cost = (
         params.investment_cost_weight * candidates["fixed_cost"].to_numpy()
-        + params.grid_cost_weight * candidates["grid_risk"].to_numpy()
-        + 0.08 * np.maximum(0.0, 1.0 - candidates.get("accessibility", 0.5).to_numpy())
+        + 8.0 * params.grid_cost_weight * candidates["grid_risk"].to_numpy()
+        + 0.35 * np.maximum(0.0, 1.0 - candidates.get("accessibility", 0.5).to_numpy())
     )
     score = coverage_value / np.maximum(cost, 1e-6)
     selected_index = np.argsort(score)[::-1][:target_count]

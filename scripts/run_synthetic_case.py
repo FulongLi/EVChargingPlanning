@@ -24,8 +24,7 @@ from evcs_planning.data.synthetic import config_from_mapping, generate_synthetic
 from evcs_planning.demand.demand_model import prepare_demand_points
 from evcs_planning.evaluation.metrics import comparison_table, evaluate_solution
 from evcs_planning.optimisation.solver import params_from_mapping, solve_clustered_planning
-from evcs_planning.visualisation.maps import write_cluster_map_svg
-from evcs_planning.visualisation.plots import write_metric_bars_svg
+from evcs_planning.visualisation.png import write_cluster_map_png, write_metric_bars_png
 
 
 def main() -> None:
@@ -93,13 +92,12 @@ def main() -> None:
         labelled_demand = demand.copy()
         labelled_demand["cluster"] = clustering.labels
         save_csv(labelled_demand, output_dirs["processed"] / f"{method_name}_demand_clusters.csv")
-        write_cluster_map_svg(
+        write_cluster_map_png(
             demand,
             clustering.labels,
             candidates,
             selected,
-            output_dirs["figures"] / f"{method_name}_map.svg",
-            title=method_name.replace("_", " ").title(),
+            output_dirs["figures"] / f"{method_name}_map.png",
         )
 
     comparison = comparison_table(metrics)
@@ -111,17 +109,15 @@ def main() -> None:
     save_csv(assignments_all, output_dirs["tables"] / "synthetic_assignments.csv")
     save_csv(pd.DataFrame(log_rows), output_dirs["logs"] / "synthetic_run_log.csv")
 
-    write_metric_bars_svg(
+    write_metric_bars_png(
         comparison,
         "average_service_distance_km",
-        output_dirs["figures"] / "average_service_distance_comparison.svg",
-        "Average Service Distance",
+        output_dirs["figures"] / "average_service_distance_comparison.png",
     )
-    write_metric_bars_svg(
+    write_metric_bars_png(
         comparison,
         "grid_impact_score",
-        output_dirs["figures"] / "grid_impact_comparison.svg",
-        "Grid Impact Score",
+        output_dirs["figures"] / "grid_impact_comparison.png",
     )
 
     print(json.dumps({"case": config.get("case_name"), "methods": list(methods), "summary": str(output_dirs["tables"] / "synthetic_summary_metrics.csv")}, indent=2))

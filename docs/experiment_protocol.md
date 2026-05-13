@@ -6,13 +6,21 @@ The MVP experiment is run with:
 python3 scripts/run_synthetic_case.py
 ```
 
-The script:
+The synthetic script:
 
 1. Generates synthetic demand points, candidate sites, and existing stations.
 2. Constructs rule-based charging demand features.
 3. Runs geographical K-means, demand-weighted K-means, and grid-aware demand clustering.
 4. Solves a simplified location-capacity planning problem for each clustering output.
-5. Writes result tables and SVG figures.
+5. Writes result tables and PNG figures.
+
+The London/Barnet script is:
+
+```bash
+python3 scripts/run_london_case.py
+```
+
+It downloads OpenStreetMap features through Overpass when `data/raw/barnet_osm_overpass.json` is absent, then builds real-data demand, candidate, existing-station, clustering, optimisation, and result tables.
 
 Primary metrics:
 

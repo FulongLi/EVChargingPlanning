@@ -44,7 +44,7 @@ It includes:
 - grid-aware demand clustering
 - simplified greedy location-capacity optimisation
 - baseline comparison metrics
-- SVG figures and CSV result tables
+- PNG figures and CSV result tables
 - LaTeX paper skeleton
 
 ## Install
@@ -77,6 +77,8 @@ The London interface is intentionally a placeholder in the MVP. The core algorit
 ```bash
 python3 scripts/run_london_case.py
 ```
+
+The first London/Barnet implementation uses OpenStreetMap features downloaded through Overpass. The pipeline builds demand proxies from residential land use, POIs, parking, major roads, substations, and existing charging stations.
 
 ## Repository Structure
 

@@ -1,4 +1,39 @@
 case_name: london_barnet
+random_seed: 42
+
+london:
+  # Approximate Barnet bounding box used for the first reproducible data pull.
+  # A borough polygon filter can replace this in a later geopandas-enabled version.
+  bbox:
+    south: 51.555
+    west: -0.335
+    north: 51.690
+    east: -0.125
+  overpass_endpoint: https://overpass-api.de/api/interpreter
+  raw_osm_json: data/raw/barnet_osm_overpass.json
+  n_grid_lon: 24
+  n_grid_lat: 24
+  max_candidate_sites: 140
+
+clustering:
+  n_clusters: 7
+  max_iter: 100
+  feature_weights:
+    spatial: 1.0
+    demand: 0.65
+    accessibility: 0.4
+    grid_risk: 0.75
+
+optimisation:
+  max_stations_per_cluster: 7
+  charger_capacity: 45.0
+  max_chargers_per_station: 20
+  coverage_radius_km: 2.4
+  distance_cost_weight: 1.0
+  investment_cost_weight: 0.00008
+  grid_cost_weight: 0.22
+  capacity_penalty_weight: 1.3
+  charger_power_kw: 50.0
 
 data:
   boundary_file: data/raw/london_barnet_boundary.geojson
@@ -10,3 +45,5 @@ data:
 notes:
   - This configuration is a placeholder for the real London data interface.
   - Core algorithm modules should remain city-agnostic.
+  - The first real-data implementation uses OpenStreetMap through Overpass.
+  - The National Chargepoint Registry is not used by default because GOV.UK reports that it was decommissioned on 2024-11-28.
